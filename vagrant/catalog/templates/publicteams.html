@@ -1,0 +1,35 @@
+<html>
+
+<body>
+
+    {% block content %}
+    <h1> {{ category.name}} </h1>
+
+        </div>
+
+
+    {% with messages = get_flashed_messages() %} {% if messages %}
+
+    <ul>
+        {% for message in messages %}
+        <li> <strong> {{message}} </strong></li>
+        {% endfor %}
+    </ul>
+    {% endif %} {% endwith %}
+
+    <div>
+
+
+        {% for teams in teams %} {{teams.name}}
+        <br> {{teams.yr_strtd}}
+        <br> {{teams.location}}
+	<br>
+         <img src="{{teams.image_url}}" alt="Cover art" style ="width:150px ; height=150px " class="coverurl" />
+        {% endfor %}
+
+        <a href="{{url_for('ShowCategories')}}">Back to Categories </a>
+    </div>
+    {% endblock %}
+</body>
+
+</html>

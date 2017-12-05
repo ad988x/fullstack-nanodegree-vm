@@ -1,0 +1,62 @@
+
+<html>
+
+<body>
+
+    {% block content %}
+    
+        <div class="creator">
+            
+            <figcaption>{{creator.name}}</figcaption>
+    
+
+        </div>
+        <h1> {{ category.name}}</h1>
+
+
+    {% with messages = get_flashed_messages() %} {% if messages %}
+
+    <ul>
+        {% for message in messages %}
+        <li> <strong> {{message}} </strong></li>
+        {% endfor %}
+    </ul>
+    {% endif %} {% endwith %}
+
+    <div>
+    <a href="{{url_for('newteam' , category_id = category.id)}}">
+            Add New Team</a>
+        <br>
+        
+    <a href = "{{url_for('editcategory' , category_id = category.id )}}">
+            Edit Category </a>
+            <br>
+    <a href="{{url_for('deletecategory' , category_id = category.id)}}">
+            Delete Catagory </a>
+        <br>
+        <br>
+
+        {% for teams in teams %} {{teams.name}}
+              <br> {{teams.yr_strtd}}
+        <br> {{teams.location}}
+	<br>
+         <img src="{{teams.image_url}}" alt="Cover art" style ="width:150px ; height=150px " class="coverurl" />
+	<br>
+        
+        
+
+        <a href="{{url_for('editteam', category_id = category.id ,
+        teams_id = team.id)}}">
+            Edit  </a>
+       
+
+        <a href="{{url_for('deleteteam', category_id = category.id,
+            teams_id = teams.id)}}"> Delete </a>
+        <br> <br>{% endfor %}
+
+        <a href="{{url_for('ShowCategories')}}">Back to category </a>
+    </div>
+    {% endblock %}
+</body>
+
+</html>
