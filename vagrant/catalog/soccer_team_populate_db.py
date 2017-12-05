@@ -15,7 +15,7 @@ session.commit()
 
 
 # Premier League Category
-category1 = Category(name='Premier League', user_id=1)
+category1 = Category(name='Premier League', img_url='https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/250px-Premier_League_Logo.svg.png', user_id=1)
 session.add(category1)
 session.commit()
 
@@ -49,7 +49,7 @@ session.commit()
 
 
 # La Liga Category
-category2 = Category(name='La Liga', user_id=1)
+category2 = Category(name='La Liga', img_url='https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/LaLiga_Santander.svg/201px-LaLiga_Santander.svg.png', user_id=1)
 session.add(category2)
 session.commit()
 
@@ -84,7 +84,7 @@ session.commit()
 
 
 # Major League Soccer Category
-category3 = Category(name='Major League Soccer', user_id=1)
+category3 = Category(name='Major League Soccer', img_url='https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/MLS_logo.svg/150px-MLS_logo.svg.png', user_id=1)
 session.add(category3)
 session.commit()
 
@@ -119,7 +119,7 @@ session.commit()
 
 
 # German Bendesliga League Category
-category4 = Category(name='Bundesliga; German League', user_id=1)
+category4 = Category(name='Bundesliga; German League', img_url='https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/190px-Bundesliga_logo_%282017%29.svg.png', user_id=1)
 session.add(category4)
 session.commit()
 
