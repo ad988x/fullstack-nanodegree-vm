@@ -1,0 +1,31 @@
+
+
+
+{% extends main.html %}
+{% block content %}
+	<h1>Latest Teams</h1>
+	<div class="latest-teams">
+	{% for teams in latest_teams}
+		{% for category in categories if teams.category_id == category.id}
+		<div class="sitem">
+			<a href="{{url_for('showteam' , category_name=category.name , teams_name = teams.name)}}">
+				{% if teams.image_url != none %}
+				<div style = background-image: url('{{teams.image_url}}') class="items-img"></div>
+				{% else %}
+				<div class="no-img">No image </div>
+				{% endif %}
+			</a>
+			<div class="title">
+				<h2 class="title">{{teams.name}}</h2>
+				<div class="sub-title">{{category.name}}</div>
+			</div>
+			<div class="action">
+				<a class="detail" href="{{url_for('showteam', category_name = category.name ,teams_name = teams.name)}}"> Detail </a>
+			</div>
+		</div>
+		{% endfor %}
+	{% endfor %}
+	</div>
+
+
+{% endblock %}
