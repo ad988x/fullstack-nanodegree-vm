@@ -1,8 +1,7 @@
-from flask import (Flask, render_template, request, redirect, jsonify,
-                   url_for, flash)
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Category, Teams, User
+from database_setup import Base, Team, Player, User
 from flask import session as login_session
 import random
 import string
@@ -17,7 +16,7 @@ app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Professional Soccer Application"
+APPLICATION_NAME = "Premier League Player Application"
 
 
 # Connect to Database and create database session
@@ -45,21 +44,22 @@ def fbconnect():
     access_token = request.data
     print "access token received %s " % access_token
 
+
     app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_'
-    'exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
         app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
+
+
     userinfo_url = "https://graph.facebook.com/v2.8/me"
     token = result.split(',')[0].split(':')[1].replace('"', '')
 
-    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields'
-    '=name,id,email' % token
+    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -69,8 +69,8 @@ def fbconnect():
     login_session['facebook_id'] = data["id"]
     login_session['access_token'] = token
 
-    url = 'https://grap.facebook.com/v2.8/me/picture?access_token=%s&redirect='
-    '0&height=200&width=200' % token
+
+    url = 'https://grap.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -89,8 +89,7 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;'
-    '-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -100,7 +99,7 @@ def fbconnect():
 def fbdisconnect():
     facebook_id = login_session['facebook_id']
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id, access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -114,6 +113,7 @@ def gconnect():
         return response
     code = request.data
 
+    
     try:
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
@@ -124,6 +124,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    
     access_token = credentials.access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
@@ -133,33 +134,34 @@ def gconnect():
         response = make_response(json.dumps(result.get('error')), 500)
         response.headers['Content-Type'] = 'application/json'
         return response
-
+   
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
         response = make_response(
             json.dumps("Token's user ID doesn't match given user ID."), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-
+  
     if result['issued_to'] != CLIENT_ID:
         response = make_response(
             json.dumps("Token's client ID does not match app's."), 401)
         print "Token's client ID does not match app's."
         response.headers['Content-Type'] = 'application/json'
         return response
-
+   
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is'
-                                            'already connected.'),
+        response = make_response(json.dumps('Current user is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
+
     login_session['access_token'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
 
+  
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
     params = {'access_token': credentials.access_token, 'alt': 'json'}
     answer = requests.get(userinfo_url, params=params)
@@ -171,6 +173,7 @@ def gconnect():
     login_session['email'] = data['email']
     login_session['provider'] = 'google'
 
+  
     user_id = getUserID(data["email"])
     if not user_id:
         user_id = createUser(login_session)
@@ -182,11 +185,12 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;'
-    '-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
+
+
 
 
 def createUser(login_session):
@@ -211,6 +215,8 @@ def getUserID(email):
         return None
 
 
+
+
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
@@ -232,182 +238,166 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for'
-                                            ' given user.', 400))
+        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
 
-@app.route('/categories/JSON')
-def categoryJSON():
-    categories = session.query(Category).all()
-    return jsonify(categories=[r.serialize for r in categories])
+
+@app.route('/team/<int:team_id>/player/JSON')
+def teamPlayerJSON(team_id):
+    team = session.query(Team).filter_by(id=team_id).one()
+    items = session.query(Player).filter_by(
+        team_id=team_id).all()
+    return jsonify(Players=[i.serialize for i in items])
 
 
-@app.route('/categories/<int:category_id>/teams/JSON')
-def category_teamsJSON(category_id):
-    categories = session.query(Category).filter_by(id=category_id).one()
-    category_teams = session.query(Teams).filter_by(
-        category_id=category_id).all()
-    return jsonify(teams=[r.serialize for r in category_teams])
+@app.route('/team/<int:team_id>/player/<int:player_id>/JSON')
+def playerJSON(team_id, player_id):
+    Player = session.query(Player).filter_by(id=player_id).one()
+    return jsonify(Player=Player.serialize)
 
 
-@app.route('/categories/<int:category_id>/teams/<int:teams_id>/JSON')
-def TeamsJSON(category_id, teams_id):
-    teams = session.query(Teams).filter_by(id=teams_id,
-                                           category_id=category_id).one()
-    return jsonify(teams=teams.serialize)
+@app.route('/team/JSON')
+def teamJSON():
+    teams = session.query(Team).all()
+    return jsonify(teams=[r.serialize for r in teams])
 
 
-# Show All Categories
+
 @app.route('/')
-@app.route('/categories/')
-def showCategories():
-    categories = session.query(Category).order_by(asc(Category.name)).all()
-    latest_item = session.query(Teams).order_by(asc(Teams.id))[0:18]
+@app.route('/team/')
+def showTeams():
+    teams = session.query(Team).order_by(asc(Team.name))
     if 'username' not in login_session:
-        return render_template('publichomepage.html', categories=categories)
+        return render_template('publicteams.html', teams=teams)
     else:
-        return render_template('latesteam.html', categories=categories,
-                               latest_teams=latest_teams)
+        return render_template('teams.html', teams=teams)
 
 
-# Add a New Category
-@app.route('/categories/new/', methods=['GET', 'POST'])
-def newCategory():
+
+@app.route('/team/new/', methods=['GET', 'POST'])
+def newTeam():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        newCategory = Category(
+        newTeam = Team(
             name=request.form['name'], user_id=login_session['user_id'])
-        session.add(newCategory)
-        flash('New Category %s Successfully Created' % newCategory.name)
+        session.add(newTeam)
+        flash('New Team %s Successfully Created' % newTeam.name)
         session.commit()
-        return redirect(url_for('showCategories'))
+        return redirect(url_for('showTeams'))
     else:
-        return render_template('newcategory.html')
+        return render_template('newTeam.html')
 
 
-# Edit Categories
-@app.route('/categories/<int:category_id>/edit/', methods=['GET', 'POST'])
-def editCategory(category_id):
-    editedCategory = session.query(
-        Category).filter_by(id=category_id).one()
+
+@app.route('/team/<int:team_id>/edit/', methods=['GET', 'POST'])
+def editTeam(team_id):
+    editedTeam = session.query(
+        Team).filter_by(id=team_id).one()
     if 'username' not in login_session:
         return redirect('/login')
-    if editedCategory.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to edit this category. Please create your own category in order to edit.');}</script><body onload='myFunction()'>"
-    if request.method == 'POST':
-        if request.form['name']:
-            editedCategory.name = request.form['name']
-            flash('Categpru Successfully Edited %s' % editedCategory.name)
-            return redirect(url_for('showCategories'))
-    else:
-        return render_template('editCategory.html', category=editedCategory)
-
-
-# Delete Categories
-@app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
-def deleteCategory(category_id):
-    CategoryToDelete = session.query(
-        Category).filter_by(id=category_id).one()
-    if 'username' not in login_session:
-        return redirect('/login')
-    if CategoryToDelete.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to delete this category. Please create your own category in order to delete.');}</script><body onload='myFunction()'>"
-    if request.method == 'POST':
-        session.delete(CategoryToDelete)
-        flash('%s Successfully Deleted' % CategoryToDelete.name)
-        session.commit()
-        return redirect(url_for('showCategories', category_id=category_id))
-    else:
-        return render_template('deleteCategory.html',
-                               category=CategoryToDelete)
-
-
-# Show all Teams
-@app.route('/categories/<int:category_id>/teams')
-def showTeams(category_id):
-    category = session.query(Category).filter_by(id=category_id).one()
-    creator = getUserInfo(category.user_id)
-    teams = session.query(Teams).filter_by(
-        category_id=category_id).all()
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('publicteams.html', teams=teams,
-                               category=category, creator=creator)
-    else:
-        return render_template('teams.html', teams=teams, cateogry=category,
-                               creator=creator)
-
-
-# Add new Team
-@app.route('/categories/<int:category_id>/teams/new/', methods=['GET', 'POST'])
-def newTeam(category_id):
-    if 'username' not in login_session:
-        return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
-    if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to add teams to this category. Please create your own category in order to add teams.');}</script><body onload='myFunction()'>"
-        if request.method == 'POST':
-            newTeam = Teams(name=request.form['name'],
-                            yr_strtd=request.form['yr_strtd'],
-                            location=request.form['location'],
-                            image_url=request.form['image_url'],
-                            category_id=category_id, user_id=category.user_id)
-            session.add(newTeam)
-            session.commit()
-            flash('New Team %s Item Successfully Created' % (newTeam.name))
-            return redirect(url_for('showTeams', category_id=category_id))
-    else:
-        return render_template('newteam.html', category_id=category_id)
-
-
-# Edit a Team
-@app.route('/categories/<int:category_id>/teams/<int:teams_id>/edit',
-           methods=['GET', 'POST'])
-def editTeam(category_id, teams_id):
-    if 'username' not in login_session:
-        return redirect('/login')
-    editedTeam = session.query(Teams).filter_by(id=teams_id).one()
-    category = session.query(Category).filter_by(id=category_id).one()
-    if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to edit teams to this category. Please create your own category in order to add teams.');}</script><body onload='myFunction()'>"
+    if editedTeam.user_id != login_session['user_id']:
+        return "<script>function myFunction() {alert('You are not authorized to edit this team. Please create your own team in order to edit.');}</script><body onload='myFunction()'>"
     if request.method == 'POST':
         if request.form['name']:
             editedTeam.name = request.form['name']
-        if request.form['yr_strtd']:
-            editedTeam.yr_strtd = request.form['yr_strtd']
-        if request.form['location']:
-            editedTeam.location = request.form['location']
-        if request.form['image_url']:
-            editedTeam.image_url = request.form['image_url']
-        session.add(editedTeam)
-        session.commit()
-        flash('Team Successfully Edited')
-        return redirect(url_for('showteam', category_id=category_id))
+            flash('Team Successfully Edited %s' % editedTeam.name)
+            return redirect(url_for('showTeams'))
     else:
-        return render_template('editteam.html', category_id=category_id,
-                               teams_id=teams_id, teams=editedteam)
+        return render_template('editTeam.html', team=editedTeam)
 
 
-# Delete a Team
-@app.route('/categories/<int:category_id>/teams/<int:teams_id>/delete',
-           methods=['GET', 'POST'])
-def deleteTeam(category_id, teams_id):
+@app.route('/team/<int:team_id>/delete/', methods=['GET', 'POST'])
+def deleteTeam(team_id):
+    teamToDelete = session.query(
+        Team).filter_by(id=team_id).one()
     if 'username' not in login_session:
         return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
-    TeamToDelete = session.query(Teams).filter_by(id=teams_id).one()
-    if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to delete teams to this category. Please create your own category in order to delete teams.');}</script><body onload='myFunction()'>"
+    if teamToDelete.user_id != login_session['user_id']:
+        return "<script>function myFunction() {alert('You are not authorized to delete this team. Please create your own team in order to delete.');}</script><body onload='myFunction()'>"
     if request.method == 'POST':
-        session.delete(TeamToDelete)
+        session.delete(teamToDelete)
+        flash('%s Successfully Deleted' % teamToDelete.name)
         session.commit()
-        flash('Team Successfully Deleted')
-        return redirect(url_for('showteam', category_id=category_id))
+        return redirect(url_for('showTeams', team_id=team_id))
     else:
-        return render_template('deleteitem.html', category_id=category_id,
-                               teams_id=teams_id, teams=TeamToDelete)
+        return render_template('deleteTeam.html', team=teamToDelete)
+
+
+
+@app.route('/team/<int:team_id>/')
+@app.route('/team/<int:team_id>/player/')
+def showPlayer(team_id):
+    team = session.query(Team).filter_by(id=team_id).one()
+    creator = getUserInfo(team.user_id)
+    players = session.query(Player).filter_by(
+        team_id=team_id).all()
+    if 'username' not in login_session or creator.id != login_session['user_id']:
+        return render_template('publicplayer.html', players=players, team=team, creator=creator)
+    else:
+        return render_template('player.html', players=players, team=team, creator=creator)
+
+
+@app.route('/team/<int:team_id>/player/new/', methods=['GET', 'POST'])
+def newPlayer(team_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    team = session.query(Team).filter_by(id=team_id).one()
+    if login_session['user_id'] != team.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to add players to this team. Please create your own team in order to add different players.');}</script><body onload='myFunction()'>"
+        if request.method == 'POST':
+            newPlayer = Player(name=request.form['name'], yr_strtd=request.form['yr_strtd'], origin=request.form[
+                               'origin'], position=request.form['position'], team_id=team_id, user_id=team.user_id)
+            session.add(newPlayer)
+            session.commit()
+            flash('New Player %s Successfully Created' % (newPlayer.name))
+            return redirect(url_for('showPlayer', team_id=team_id))
+    else:
+        return render_template('newplayer.html', team_id=team_id)
+
+
+@app.route('/team/<int:team_id>/player/<int:player_id>/edit', methods=['GET', 'POST'])
+def editPlayer(team_id, player_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    editedPlayer = session.query(Player).filter_by(id=player_id).one()
+    team = session.query(Team).filter_by(id=team_id).one()
+    if login_session['user_id'] != team.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to edit players to this team. Please create your own team in order to edit players.');}</script><body onload='myFunction()'>"
+    if request.method == 'POST':
+        if request.form['name']:
+            editedPlayer.name = request.form['name']
+        if request.form['yr_strtd']:
+            editedPlayer.yr_strtd = request.form['yr_strtd']
+        if request.form['origin']:
+            editedPlayer.origin = request.form['origin']
+        if request.form['position']:
+            editedPlayer.position = request.form['position']
+        session.add(editedPlayer)
+        session.commit()
+        flash('Player Successfully Edited')
+        return redirect(url_for('showPlayer', team_id=team_id))
+    else:
+        return render_template('editplayer.html', team_id=team_id, player_id=player_id, player=editedPlayer)
+
+
+@app.route('/team/<int:team_id>/player/<int:player_id>/delete', methods=['GET', 'POST'])
+def deletePlayer(team_id, player_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    team = session.query(Team).filter_by(id=team_id).one()
+    playerToDelete = session.query(Player).filter_by(id=player_id).one()
+    if login_session['user_id'] != team.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to delete players on this team. Please create your own team in order to delete players.');}</script><body onload='myFunction()'>"
+    if request.method == 'POST':
+        session.delete(playerToDelete)
+        session.commit()
+        flash('Player Successfully Deleted')
+        return redirect(url_for('showPlayer', team_id=team_id))
+    else:
+        return render_template('deleteplayer.html', player=playerToDelete)
 
 
 @app.route('/disconnect')
@@ -426,10 +416,11 @@ def disconnect():
         del login_session['user_id']
         del login_session['provider']
         flash("You have successfully been logged out.")
-        return redirect(url_for('showCategories'))
+        return redirect(url_for('showRestaurants'))
     else:
         flash("You were not logged in")
-        return redirect(url_for('showCategories'))
+        return redirect(url_for('showRestaurants'))
+
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
