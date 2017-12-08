@@ -249,7 +249,7 @@ def teamPlayerJSON(team_id):
 
 @app.route('/team/<int:team_id>/player/<int:player_id>/JSON')
 def playerJSON(team_id, player_id):
-    Player = session.query(Player).filter_by(id=player_id).one()
+    player = session.query(Player).filter_by(id=player_id).one()
     return jsonify(Player=Player.serialize)
 
 
@@ -259,6 +259,7 @@ def teamJSON():
     return jsonify(teams=[r.serialize for r in teams])
 
 
+# Show all Teams
 @app.route('/')
 @app.route('/team/')
 def showTeams():
@@ -269,6 +270,7 @@ def showTeams():
         return render_template('teams.html', teams=teams)
 
 
+# Add a New Team
 @app.route('/team/new/', methods=['GET', 'POST'])
 def newTeam():
     if 'username' not in login_session:
@@ -284,14 +286,17 @@ def newTeam():
         return render_template('newTeam.html')
 
 
+# Edit a Team
 @app.route('/team/<int:team_id>/edit/', methods=['GET', 'POST'])
 def editTeam(team_id):
-    editedTeam = session.query(
-        Team).filter_by(id=team_id).one()
     if 'username' not in login_session:
         return redirect('/login')
+    editedTeam = session.query(
+        Team).filter_by(id=team_id).one()
     if editedTeam.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to edit this team. Please create your own team in order to edit.');}</script><body onload='myFunction()'>"
+        return ("<script>function myFunction() {alert('You are not author"
+                "ized to edit this team. Please create your own team in order"
+                " to edit.');}</script><body onload='myFunction()'>")
     if request.method == 'POST':
         if request.form['name']:
             editedTeam.name = request.form['name']
@@ -301,14 +306,17 @@ def editTeam(team_id):
         return render_template('editTeam.html', team=editedTeam)
 
 
+# Delete a Team
 @app.route('/team/<int:team_id>/delete/', methods=['GET', 'POST'])
 def deleteTeam(team_id):
-    teamToDelete = session.query(
-        Team).filter_by(id=team_id).one()
     if 'username' not in login_session:
         return redirect('/login')
+    teamToDelete = session.query(
+        Team).filter_by(id=team_id).one()
     if teamToDelete.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to delete this team. Please create your own team in order to delete.');}</script><body onload='myFunction()'>"
+        return ("<script>function myFunction() {alert('You are not authorized"
+                " to delete this team. Please create your own team in order "
+                "to delete.');}</script><body onload='myFunction()'>")
     if request.method == 'POST':
         session.delete(teamToDelete)
         flash('%s Successfully Deleted' % teamToDelete.name)
@@ -318,6 +326,7 @@ def deleteTeam(team_id):
         return render_template('deleteTeam.html', team=teamToDelete)
 
 
+# Show all Players on a Team
 @app.route('/team/<int:team_id>/')
 @app.route('/team/<int:team_id>/player/')
 def showPlayer(team_id):
@@ -325,7 +334,8 @@ def showPlayer(team_id):
     creator = getUserInfo(team.user_id)
     players = session.query(Player).filter_by(
         team_id=team_id).all()
-    if 'username' not in login_session or creator.id != login_session['user_id']:
+    if 'username' not in login_session or creator.id != login_session['us'
+                                                                      'er_id']:
         return render_template('publicplayer.html', players=players,
                                team=team, creator=creator)
     else:
@@ -333,27 +343,32 @@ def showPlayer(team_id):
                                creator=creator)
 
 
+# Add a New Player from a Team
 @app.route('/team/<int:team_id>/player/new/', methods=['GET', 'POST'])
 def newPlayer(team_id):
     if 'username' not in login_session:
         return redirect('/login')
     team = session.query(Team).filter_by(id=team_id).one()
     if login_session['user_id'] != team.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to add players to this team. Please create your own team in order to add different players.');}</script><body onload='myFunction()'>"
-        if request.method == 'POST':
-            newPlayer = Player(name=request.form['name'],
-                               yr_strtd=request.form['yr_strtd'],
-                               origin=request.form['origin'],
-                               position=request.form['position'],
-                               team_id=team_id, user_id=team.user_id)
-            session.add(newPlayer)
-            session.commit()
-            flash('New Player %s Successfully Created' % (newPlayer.name))
-            return redirect(url_for('showPlayer', team_id=team_id))
+        return ("<script>function myFunction() {alert('You are not authorized"
+                " to add players to this team. Please create your own team in"
+                " order to add different players.');}</script><body "
+                "onload='myFunction()'>")
+    if request.method == 'POST':
+        newPlayer = Player(name=request.form['name'],
+                           yr_strtd=request.form['yr_strtd'],
+                           origin=request.form['origin'],
+                           position=request.form['position'],
+                           team_id=team_id, user_id=team.user_id)
+        session.add(newPlayer)
+        session.commit()
+        flash('New Player %s Successfully Created' % (newPlayer.name))
+        return redirect(url_for('showPlayer', team_id=team_id))
     else:
         return render_template('newplayer.html', team_id=team_id)
 
 
+# Edit a Player from a Team
 @app.route('/team/<int:team_id>/player/<int:player_id>/edit',
            methods=['GET', 'POST'])
 def editPlayer(team_id, player_id):
@@ -362,7 +377,10 @@ def editPlayer(team_id, player_id):
     editedPlayer = session.query(Player).filter_by(id=player_id).one()
     team = session.query(Team).filter_by(id=team_id).one()
     if login_session['user_id'] != team.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to edit players to this team. Please create your own team in order to edit players.');}</script><body onload='myFunction()'>"
+        return ("<script>function myFunction() {alert('You are not authorized"
+                " to edit players to this team. Please create your own team in"
+                " order to edit players.');}</script><body "
+                "onload='myFunction()'>")
     if request.method == 'POST':
         if request.form['name']:
             editedPlayer.name = request.form['name']
@@ -381,6 +399,7 @@ def editPlayer(team_id, player_id):
                                player_id=player_id, player=editedPlayer)
 
 
+# Delete a Player from a Team
 @app.route('/team/<int:team_id>/player/<int:player_id>/delete',
            methods=['GET', 'POST'])
 def deletePlayer(team_id, player_id):
@@ -389,7 +408,10 @@ def deletePlayer(team_id, player_id):
     team = session.query(Team).filter_by(id=team_id).one()
     playerToDelete = session.query(Player).filter_by(id=player_id).one()
     if login_session['user_id'] != team.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to delete players on this team. Please create your own team to delete players.');}</script><body onload = 'myFunction()'> "
+        return ("<script>function myFunction() {alert('You are not authorized"
+                " to delete players on this team. Please create your own team"
+                " to delete players.');}</script><body"
+                " onload = 'myFunction()'> ")
     if request.method == 'POST':
         session.delete(playerToDelete)
         session.commit()
@@ -403,7 +425,6 @@ def deletePlayer(team_id, player_id):
 def disconnect():
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
-            gdisconnect()
             del login_session['gplus_id']
             del login_session['access_token']
         if login_session['provider'] == 'facebook':
@@ -415,10 +436,10 @@ def disconnect():
         del login_session['user_id']
         del login_session['provider']
         flash("You have successfully been logged out.")
-        return redirect(url_for('showRestaurants'))
+        return redirect(url_for('showTeam'))
     else:
         flash("You were not logged in")
-        return redirect(url_for('showRestaurants'))
+        return redirect(url_for('showTeam'))
 
 
 if __name__ == '__main__':
