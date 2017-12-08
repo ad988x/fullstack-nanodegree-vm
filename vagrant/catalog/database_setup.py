@@ -23,6 +23,7 @@ class Team(Base):
     name = Column(String(250), nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
+    player = relationship('Player', cascade='all, delete-orphan')
 
     @property
     def serialize(self):
@@ -46,7 +47,7 @@ class Player(Base):
     team = relationship(Team)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
-
+    
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
