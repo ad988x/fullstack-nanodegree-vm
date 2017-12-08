@@ -1,155 +1,161 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Category, Teams, Base, User
+from database_setup import Player, Team, Base, User
 
 engine = create_engine('sqlite:///itemcatalogwithuser.db')
-
+# Bind the engine to the metadata of the Base class so that the
+# declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
+
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
-
 
 User1 = User(name="Andy Dusanowsky", email="duzy2172@gmail.com")
 session.add(User1)
 session.commit()
 
 
-# Premier League Category
-category1 = Category(name='Premier League', img_url='https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/250px-Premier_League_Logo.svg.png', user_id=1)
-session.add(category1)
+# Tottenham Hotspur Team
+team1 = Team(name='Tottenham Hotspur', user_id=1)
+session.add(team1)
 session.commit()
 
-teams1 = Teams(user_id=1, name='Tottenham Hotspur', location='Wembly Stadium',
-               yr_strtd='1882', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/b/b4/Tottenham_Hotspur.svg/125px'
-               '-Tottenham_Hotspur.svg.png')
-session.add(teams1)
+player1 = Player(user_id=1, name='Harry Kane', origin='England',
+                 yr_strtd='2004', position='Forward', team=team1)
+session.add(player1)
 session.commit()
 
-teams2 = Teams(user_id=1, name='Chelsea F.C.', location='Stamford Bridge',
-               yr_strtd='1905', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/c/cc/Chelsea_FC.svg/200px-Chelsea_FC.'
-               'svg.png')
-session.add(teams2)
+player2 = Player(user_id=1, name='Dele Alli', origin='England',
+                 yr_strtd='2015', position='Mid Field', team=team1)
+session.add(player2)
 session.commit()
 
-teams3 = Teams(user_id=1, name='Liverpool F.C.', location='Anfield',
-               yr_strtd='1892', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/0/0c/Liverpool_FC.svg/170px-Liverpool_FC'
-               '.svg.png')
-session.add(teams3)
+player3 = Player(user_id=1, name='Hugo Lloris', origin='France',
+                 yr_strtd='2012', position='Goal Keeper', team=team1)
+session.add(player3)
 session.commit()
 
-teams4 = Teams(user_id=1, name='Arsenal F.C.', location='Emirates Stadium',
-               yr_strtd='1886', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/5/53/Arsenal_FC.svg/180px-Arsenal_FC.'
-               'svg.png')
-session.add(teams4)
+player4 = Player(user_id=1, name='Danny Rose', origin='England',
+                 yr_strtd='2007', position='Defense', team=team1)
+session.add(player4)
 session.commit()
 
-
-# La Liga Category
-category2 = Category(name='La Liga', img_url='https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/LaLiga_Santander.svg/201px-LaLiga_Santander.svg.png', user_id=1)
-session.add(category2)
+player5 = Player(user_id=1, name='Son Heung-min', origin='South Korea',
+                 yr_strtd='2015', position='Forward', team=team1)
+session.add(player5)
 session.commit()
 
-teams5 = Teams(user_id=1, name='FC Barcelona', location='Camp Nou',
-               yr_strtd='1899', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/220px-'
-               'FC_Barcelona_%28crest%29.svg.png')
-session.add(teams5)
+player6 = Player(user_id=1, name='Christian Eriksen', origin='Denmark',
+                 yr_strtd='2013', position='Mid Field', team=team1)
+session.add(player6)
 session.commit()
 
-teams6 = Teams(user_id=1, name='Real Madrid C.F.',
-               location='Santiago Bernabeu Stadium', yr_strtd='1902',
-               image_url='https://upload.wikimedia.org/wikipedia/en/thumb/5/'
-               '56/Real_Madrid_CF.svg/165px-Real_Madrid_CF.svg.png')
-session.add(teams6)
+# Arsenal F.C. Team
+team2 = Team(name='Arsenal F.C.', user_id=1)
+session.add(team2)
 session.commit()
 
-teams7 = Teams(user_id=1, name='Atletico Madrid',
-               location='Wanda Metropolitano', yr_strtd='1903',
-               image_url='https://upload.wikimedia.org/wikipedia/en/thumb/f/'
-               'f4/Atletico_Madrid_2017_logo.svg/170px-Atletico_Madrid_2017'
-               '_logo.svg.png')
-session.add(teams7)
+player7 = Player(user_id=1, name='Alexis Sanchez', origin='Chile',
+                 yr_strtd='2014', position='Forward', team=team2)
+session.add(player7)
 session.commit()
 
-teams8 = Teams(user_id=1, name='Valencia CF', location='Mestalla Stadium',
-               yr_strtd='1919', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/c/ce/Valenciacf.svg/220px-Valenciacf.'
-               'svg.png')
-session.add(teams8)
+player8 = Player(user_id=1, name='Aaron Ramsey', origin='Wales',
+                 yr_strtd='2008', position='Mid Field', team=team2)
+session.add(player8)
 session.commit()
 
-
-# Major League Soccer Category
-category3 = Category(name='Major League Soccer', img_url='https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/MLS_logo.svg/150px-MLS_logo.svg.png', user_id=1)
-session.add(category3)
+player9 = Player(user_id=1, name='David Ospina Ramirez', origin='Columbia',
+                 yr_strtd='2014', position='Goal Keeper', team=team2)
+session.add(player9)
 session.commit()
 
-teams9 = Teams(user_id=1, name='LA Galaxy', location='StubHub Center',
-               yr_strtd='1994', image_url='https://upload.wikimedia.org/'
-               'wikipedia/en/thumb/7/70/Los_Angeles_Galaxy_logo.svg/220px-'
-               'LosAngeles_Galaxy_logo.svg.png')
-session.add(teams9)
+player10 = Player(user_id=1, name='Per Mertesacker', origin='West Germany',
+                  yr_strtd='2011', position='Defense', team=team2)
+session.add(player10)
 session.commit()
 
-teams10 = Teams(user_id=1, name='Seattle Sounders FC',
-                location='CenturyLink Field', yr_strtd='2007',
-                image_url='https://upload.wikimedia.org/wikipedia/en/thumb/2/'
-                '27/Seattle_Sounders_FC.svg/170px-Seattle_Sounders_FC.svg.png')
-session.add(teams10)
+player11 = Player(user_id=1, name='Alex Iwobi', origin='Nigeria',
+                  yr_strtd='2015', position='Forward', team=team2)
+session.add(player11)
 session.commit()
 
-teams11 = Teams(user_id=1, name='D.C. United', location='Audi Field',
-                yr_strtd='1996', image_url='https://upload.wikimedia.org/'
-                'wikipedia/en/thumb/3/32/D.C._United_logo_%282016%29'
-                '.svg/220px-D.C._United_logo_%282016%29.svg.png')
-session.add(teams11)
-session.commit()
-
-teams12 = Teams(user_id=1, name='New York Red Bulls',
-                location='Red Bull Arena', yr_strtd='1994',
-                image_url='https://upload.wikimedia.org/'
-                'wikipedia/en/thumb/5/51/New_York_Red_Bulls_logo.svg/230px-'
-                'New_York_Red_Bulls_logo.svg.png')
-session.add(teams12)
+player12 = Player(user_id=1, name='Jack Wilshere', origin='England',
+                  yr_strtd='2008', position='Mid Field', team=team2)
+session.add(player12)
 session.commit()
 
 
-# German Bendesliga League Category
-category4 = Category(name='Bundesliga; German League', img_url='https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/190px-Bundesliga_logo_%282017%29.svg.png', user_id=1)
-session.add(category4)
+# Chelsea F.C. Team
+team3 = Team(name='Chelsea F.C.', user_id=1)
+session.add(team3)
 session.commit()
 
-teams13 = Teams(user_id=1, name='FC Bayern Munich', location='Allianz Arena',
-                yr_strtd='1900', image_url='https://upload.wikimedia.org/'
-                'wikipedia/en/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017'
-                '%29.svg/220px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png')
-session.add(teams13)
+player13 = Player(user_id=1, name='Alvaro Morata', origin='Spain',
+                  yr_strtd='2017', position='Forward', team=team3)
+session.add(player13)
 session.commit()
 
-teams14 = Teams(user_id=1, name='Borussia Dortmund', location='Westfale'
-                'nstadion', yr_strtd='1909', image_url='https://upload.'
-                'wikimedia.org/wikipedia/commons/thumb/6/67/Borussia_Dortmund_'
-                'logo.svg/220px-Borussia_Dortmund_logo.svg.png')
-session.add(teams14)
+player14 = Player(user_id=1, name='Pedro', origin='Spain',
+                  yr_strtd='2015', position='Mid Field', team=team3)
+session.add(player14)
 session.commit()
 
-teams15 = Teams(user_id=1, name='SV Werder Bremen', location='Weserstadion',
-                yr_strtd='1899', image_url='https://upload.wikimedia.org/'
-                'wikipedia/commons/thumb/b/be/SV-Werder-Bremen-Logo.svg/'
-                '125px-SV-Werder-Bremen-Logo.svg.png')
-session.add(teams15)
+player15 = Player(user_id=1, name='Willy Caballero', origin='Argentina',
+                  yr_strtd='2017', position='Goal Keeper', team=team3)
+session.add(player15)
 session.commit()
 
-teams16 = Teams(user_id=1, name='Hamburger SV', location='Volksparkstadion',
-                yr_strtd='1887', image_url='https://upload.wikimedia.org/'
-                'wikipedia/commons/thumb/6/66/HSV-Logo.svg/220px-HSV-Logo.'
-                'svg.png')
-session.add(teams16)
+player16 = Player(user_id=1, name='Gary Cahil', origin='England',
+                  yr_strtd='2012', position='Defense', team=team3)
+session.add(player16)
+session.commit()
+
+player17 = Player(user_id=1, name='Michy Batshauayi', origin='Belgium',
+                  yr_strtd='2016', position='Forward', team=team3)
+session.add(player17)
+session.commit()
+
+player18 = Player(user_id=1, name='William', origin='Brazil',
+                  yr_strtd='2013', position='Mid Field', team=team3)
+session.add(player18)
 session.commit()
 
 
-print "add all teams in catalog"
+# Liverpool F.C. Team
+team4 = Team(name='Liverpool F.C.', user_id=1)
+session.add(team4)
+session.commit()
+
+player19 = Player(user_id=1, name='Roberto Frimino', origin='Brazil',
+                  yr_strtd='2015', position='Forward', team=team4)
+session.add(player19)
+session.commit()
+
+player20 = Player(user_id=1, name='Georginio Wijnaldum', origin='Netherlands',
+                  yr_strtd='2016', position='Mid Field', team=team4)
+session.add(player20)
+session.commit()
+
+player21 = Player(user_id=1, name='Loris Karius', origin='Germany',
+                  yr_strtd='2016', position='Goal Keeper', team=team4)
+session.add(player21)
+session.commit()
+
+player22 = Player(user_id=1, name='Dejan Lovren', origin='SFR Yugoslavia',
+                  yr_strtd='2014', position='Defense', team=team4)
+session.add(player22)
+session.commit()
+
+player23 = Player(user_id=1, name='Daniel Sturridge', origin='England',
+                  yr_strtd='2013', position='Forward', team=team4)
+session.add(player23)
+session.commit()
+
+player24 = Player(user_id=1, name='Jordan Henderson', origin='England',
+                  yr_strtd='2011', position='Mid Field', team=team4)
+session.add(player24)
+session.commit()
+
+
+print "added all teams"
